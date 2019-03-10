@@ -5,6 +5,7 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Int32
 import numpy as np
 import cv2
+import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Activation
 from keras.layers import Dropout, Lambda
@@ -59,20 +60,23 @@ model.load_weights("lamba.h5")
 print "[INFO] ok."
 model.compile(optimizer=Adam(0.0001), loss="mse")
 
+graph = tf.get_default_graph()
+
 
 rospy.init_node("cnn_node")
-sub = rospy.Subscriber("camera_topic", Image, callback)
 pub = rospy.Publisher("angle_topic", Int32, queue_size=1)
 
 
 def predict_angle(image):
     global model
-    road = image[-320:,:].copy()
-    road = cv2.resize(road, (road.shape[1]//10, road.shape[0]//10), interpolation=cv2.INTER_AREA)
+    global graph
+    with graph.as_default():
+        road = image[-320:,:].copy()
+        road = cv2.resize(road, (road.shape[1]//10, road.shape[0]//10), interpolation=cv2.INTER_AREA)
 
-    road = np.array(road, "float").reshape(1, 32, 64, 3)
-    angle = int(round(model.predict(road)[0][0] * 30 + 90))
-    return angle
+        road = np.array(road, "float").reshape(1, 32, 64, 3)
+        angle = int(round(model.predict(road)[0][0] * 30 + 90))
+        return angle
 
 
 def callback(data):
@@ -85,6 +89,8 @@ def callback(data):
     pub.publish(angle_msg)
 
 
-if __name__ == "__main__"
+sub = rospy.Subscriber("camera_topic", Image, callback)
+
+if __name__ == "__main__":
     rospy.spin()
 
