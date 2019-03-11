@@ -15,7 +15,7 @@ class State:
         self.speed    = 0
 
 
-class Controler:
+class Controller:
     def __init__(self):
         rospy.init_node("control_node")
         # Subscribers
@@ -89,5 +89,5 @@ class Controler:
 
 
 if __name__ == "__main__":
-    controler = Controler()
-    controler.start_control()
+    controller = Controller()
+    controller.start_control()
