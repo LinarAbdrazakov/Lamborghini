@@ -1,5 +1,7 @@
 import RPi.GPIO as GPIO
 import time
+import rospy
+from std_msgs.msg import Float32MultiArray
 
 
 GPIO.setmode(GPIO.BCM)
@@ -26,9 +28,9 @@ def read_channel(channel):
     while GPIO.input(channel) == 1:
         pass
     stop = time.time()
-    delay = (stop - start) * 1000
+    delay = (stop - start) * 1000000
 
-    return delay
+    return round(delay, 2)
 
 
 def receive():
@@ -43,8 +45,12 @@ def receive():
 
 
 try:
-    while True:
-        print([int(1000*d) for d in receive()])
+    rospy.init_node("receiver_node")
+    pub = rospy.Publisher("receiver_topic", Float32MultiArray, queue_size=1)
+    while not rospy.is_shutdown():
+        msg = Float32MultiArray
+        msg.data = receive()
+        pub.publish(msg)
 
 finally:
     GPIO.cleanup()
