@@ -48,7 +48,7 @@ try:
     rospy.init_node("receiver_node")
     pub = rospy.Publisher("receiver_topic", Float32MultiArray, queue_size=1)
     while not rospy.is_shutdown():
-        msg = Float32MultiArray
+        msg = Float32MultiArray()
         msg.data = receive()
         pub.publish(msg)
 
